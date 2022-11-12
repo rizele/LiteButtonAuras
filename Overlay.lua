@@ -117,6 +117,7 @@ function LiteButtonAurasOverlayMixin:Update(stateOnly)
 
     local show = false
     local state = LBA.state
+    local friendly_target = UnitExists('target') and UnitIsFriend('player', 'target')
 
     self.expireTime = nil
     self.stackCount = nil
@@ -128,10 +129,12 @@ function LiteButtonAurasOverlayMixin:Update(stateOnly)
             show = true
         elseif self:TrySetAsInterrupt() then
             show = true
+        elseif friendly_target and self:TrySetAsTargetBuff() then
+            show = true
         elseif state.playerTotems[self.name] then
             self:SetAsTotem(state.playerTotems[self.name])
             show = true
-        elseif state.playerBuffs[self.name] then
+        elseif not friendly_target and state.playerBuffs[self.name] then
             self:SetAsBuff(state.playerBuffs[self.name])
             show = true
         elseif state.playerPetBuffs[self.name] then
@@ -208,6 +211,19 @@ function LiteButtonAurasOverlayMixin:SetAsBuff(info)
     self.Glow:SetVertexColor(color.r, color.g, color.b, 0.7)
     self.Count:SetTextColor(color.r, color.g, color.b, 1.0)
     self:SetAsAura(info)
+end
+
+function LiteButtonAurasOverlayMixin:TrySetAsTargetBuff()
+    if not self.spellID then
+        return
+    end
+
+    for _, info in pairs(LBA.state.targetBuffs) do
+        if info[7] == 'player' and info[13] and self.spellID == info[10] then
+            self:SetAsBuff(info)
+            return true
+        end
+    end
 end
 
 function LiteButtonAurasOverlayMixin:SetAsDebuff(info)
