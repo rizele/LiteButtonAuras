@@ -213,13 +213,27 @@ function LiteButtonAurasOverlayMixin:SetAsBuff(info)
     self:SetAsAura(info)
 end
 
+function LiteButtonAurasOverlayMixin:MatchSpell(info)
+    if self.spellID == info[10] then
+        return true
+    end
+
+    -- Special case for Prayer of Mending.
+    if self.spellID == 33076 then
+        if info[1] == 'Prayer of Mending' then
+            return true
+        end
+    end
+end
+
 function LiteButtonAurasOverlayMixin:TrySetAsTargetBuff()
     if not self.spellID then
         return
     end
 
     for _, info in pairs(LBA.state.targetBuffs) do
-        if info[7] == 'player' and info[13] and self.spellID == info[10] then
+        -- Cast by a player, it's this player, and the button spell matches the buff.
+        if info[13] and info[7] == 'player' and self:MatchSpell(info) then
             self:SetAsBuff(info)
             return true
         end
