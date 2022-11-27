@@ -27,7 +27,6 @@ LBA.state = {
 -- faster. Only do this for things that are called in the event loop otherwise
 -- it's just a pain to maintain.
 
-local wipe = table.wipe
 local GetSpellInfo = GetSpellInfo
 local GetTotemInfo = GetTotemInfo
 local MAX_TOTEMS = MAX_TOTEMS
@@ -71,7 +70,7 @@ end
 local AuraMapByName = {}
 
 function LBA.UpdateAuraMap()
-    wipe(AuraMapByName)
+    table.wipe(AuraMapByName)
 
     for fromID, fromTable in pairs(LBA.db.profile.auraMap) do
         local fromName = GetSpellInfo(fromID)
@@ -200,9 +199,13 @@ end
 --  * use the UNIT_AURA push data (as above)
 --  * handle AuraMapByName in the overlay instead of here
 --  * store only the parts of the UnitAura() return the overlay wants
---  * use C_UnitAura.GetAuraDataBySlot which has a struct return
+--  * use C_UnitAuras.GetAuraDataBySlot which has a struct return
 --
 -- Overall the 10.0 changes are not that helpful for matching by name.
+--
+-- It's worth noting that the 10.0 BuffFrame still uses the same mechanism
+-- as used here, but both the CompactUnitFrame and the TargetFrame have
+-- switched to using the new ways.
 
 -- [ 1] name,
 -- [ 2] icon,
@@ -236,7 +239,7 @@ local function UpdatePlayerChannel()
 end
 
 local function UpdatePlayerBuffs()
-    wipe(LBA.state.playerBuffs)
+    LBA.state.playerBuffs = {}
     ForEachAura('player', 'HELPFUL PLAYER', nil,
         function (...)
             UpdateTableAura(LBA.state.playerBuffs, ...)
@@ -248,7 +251,7 @@ local function UpdatePlayerBuffs()
 end
 
 local function UpdatePlayerPetBuffs()
-    wipe(LBA.state.playerPetBuffs)
+    LBA.state.playerPetBuffs = {}
     ForEachAura('pet', 'HELPFUL PLAYER', nil,
         function (...)
             UpdateTableAura(LBA.state.playerPetBuffs, ...)
@@ -256,7 +259,7 @@ local function UpdatePlayerPetBuffs()
 end
 
 local function UpdatePlayerTotems()
-    wipe(LBA.state.playerTotems)
+    LBA.state.playerTotems = {}
     for i = 1, MAX_TOTEMS do
         local exists, name, startTime, duration, model = GetTotemInfo(i)
         if exists and name then
@@ -269,7 +272,7 @@ local function UpdatePlayerTotems()
 end
 
 local function UpdateEnemyDebuffs()
-    wipe(LBA.state.targetDebuffs)
+    LBA.state.targetDebuffs = {}
     ForEachAura('target', 'HARMFUL PLAYER', nil,
         function (...)
             UpdateTableAura(LBA.state.targetDebuffs, ...)
@@ -277,7 +280,7 @@ local function UpdateEnemyDebuffs()
 end
 
 local function UpdateEnemyBuffs()
-    wipe(LBA.state.targetBuffs)
+    LBA.state.targetBuffs = {}
     if UnitCanAttack('player', 'target') then
         -- Hostile target buffs are only for dispels
         ForEachAura('target', 'HELPFUL', nil,

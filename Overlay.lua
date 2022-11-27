@@ -48,13 +48,13 @@ function LiteButtonAurasOverlayMixin:Style()
     local font = LBA.db.profile.font
     if type(font) == 'string' and _G[font] and _G[font].GetFont then
         self.Timer:SetFont(_G[font]:GetFont())
-        self.Count:SetFont(_G[font]:GetFont())
+        self.Stacks:SetFont(_G[font]:GetFont())
     elseif type(font) == 'table' then
         self.Timer:SetFont(unpack(font))
-        self.Count:SetFont(unpack(font))
+        self.Stacks:SetFont(unpack(font))
     else
         self.Timer:SetFont(NumberFontNormal:GetFont())
-        self.Count:SetFont(NumberFontNormal:GetFont())
+        self.Stacks:SetFont(NumberFontNormalYellow:GetFont())
     end
 end
 
@@ -209,7 +209,7 @@ end
 function LiteButtonAurasOverlayMixin:SetAsBuff(info)
     local color = LBA.db.profile.color.buff
     self.Glow:SetVertexColor(color.r, color.g, color.b, 0.7)
-    self.Count:SetTextColor(color.r, color.g, color.b, 1.0)
+    -- self.Stacks:SetTextColor(color.r, color.g, color.b, 1.0)
     self:SetAsAura(info)
 end
 
@@ -243,7 +243,7 @@ end
 function LiteButtonAurasOverlayMixin:SetAsDebuff(info)
     local color = LBA.db.profile.color.debuff
     self.Glow:SetVertexColor(color.r, color.g, color.b, 0.7)
-    self.Count:SetTextColor(color.r, color.g, color.b, 1.0)
+    -- self.Stacks:SetTextColor(color.r, color.g, color.b, 1.0)
     self:SetAsAura(info)
 end
 
@@ -287,7 +287,7 @@ end
 function LiteButtonAurasOverlayMixin:SetAsSoothe(info)
     local color = LBA.db.profile.color.enrage
     self.Glow:SetVertexColor(color.r, color.g, color.b, 0.7)
-    self.Count:SetTextColor(color.r, color.g, color.b, 1.0)
+    -- self.Stacks:SetTextColor(color.r, color.g, color.b, 1.0)
     self:SetAsAura(info)
 end
 ]]
@@ -310,7 +310,7 @@ end
 function LiteButtonAurasOverlayMixin:SetAsDispel(info)
     local color = DebuffTypeColor[info[4] or ""]
     self.Glow:SetVertexColor(color.r, color.g, color.b, 0.7)
-    self.Count:SetTextColor(color.r, color.g, color.b, 1.0)
+    -- self.Stacks:SetTextColor(color.r, color.g, color.b, 1.0)
     self:SetAsAura(info)
 end
 
@@ -356,9 +356,9 @@ end
 
 function LiteButtonAurasOverlayMixin:ShowStacks(isShown)
     if isShown then
-        self.Count:SetText(self.stackCount)
+        self.Stacks:SetText(self.stackCount)
     end
-    self.Count:SetShown(isShown)
+    self.Stacks:SetShown(isShown)
 end
 
 
