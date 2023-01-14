@@ -110,59 +110,63 @@ local function IsDeniedSpell(spellID)
 end
 
 function LiteButtonAurasOverlayMixin:Update(stateOnly)
-    -- Even though the action might be the same, what it contains could have
-    -- changed due to the dynamic nature of macros and some spells.
-    if not stateOnly then
-        self:SetUpAction()
-    end
-
     local show = false
-    local state = LBA.state
-    local friendly_target = UnitExists('target') and UnitIsFriend('player', 'target')
 
     self.expireTime = nil
     self.stackCount = nil
     self.displayGlow = nil
     self.displaySuggestion = nil
 
-    if self.name and not IsDeniedSpell(self.spellID) then
-        if self:TrySetAsSoothe() then
-            show = true
-        elseif self:TrySetAsInterrupt() then
-            show = true
-        elseif friendly_target and self:TrySetAsTargetBuff() then
-            show = true
-        elseif state.playerTotems[self.name] then
-            self:SetAsTotem(state.playerTotems[self.name])
-            show = true
-        elseif not friendly_target and state.playerBuffs[self.name] then
-            self:SetAsBuff(state.playerBuffs[self.name])
-            show = true
-        elseif state.playerPetBuffs[self.name] then
-            if LBA.PlayerPetBuffs[self.spellID] then
-                self:SetAsBuff(state.playerPetBuffs[self.name])
-                show = true
-            end
-        elseif state.targetDebuffs[self.name] then
-            if self.name ~= LBA.state.playerChannel then
-                self:SetAsDebuff(state.targetDebuffs[self.name])
-                show = true
-            end
-        elseif self:TrySetAsDispel(self) then
-            show = true
+    if self:HasAction() then
+
+        -- Even though the action might be the same, what it contains could have
+        -- changed due to the dynamic nature of macros and some spells.
+        if not stateOnly then
+            self:SetUpAction()
         end
-    end
 
-    -- We want to try to avoid doubling up on buttons Blizzard are already
-    -- showing their overlay on, because it looks terrible. Also try to
-    -- avoid calling IsSpellOverlayed as it seems to cause issues with the
-    -- new WoW 10.0.2 glow.
+        local state = LBA.state
+        local friendly_target = UnitExists('target') and UnitIsFriend('player', 'target')
 
-    if WOW_PROJECT_ID == 1 then
-        self.displayGlow = self.displayGlow and not (self.spellID and IsSpellOverlayed(self.spellID))
-    else
-        local parent = self:GetParent()
-        self.displayGlow = self.displayGlow and not (parent.overlay and parent.overlay:IsShown())
+        if self.name and not IsDeniedSpell(self.spellID) then
+            if self:TrySetAsSoothe() then
+                show = true
+            elseif self:TrySetAsInterrupt() then
+                show = true
+            elseif friendly_target and self:TrySetAsTargetBuff() then
+                show = true
+            elseif state.playerTotems[self.name] then
+                self:SetAsTotem(state.playerTotems[self.name])
+                show = true
+            elseif not friendly_target and  state.playerBuffs[self.name] then
+                self:SetAsBuff(state.playerBuffs[self.name])
+                show = true
+            elseif state.playerPetBuffs[self.name] then
+                if LBA.PlayerPetBuffs[self.spellID] then
+                    self:SetAsBuff(state.playerPetBuffs[self.name])
+                    show = true
+                end
+            elseif state.targetDebuffs[self.name] then
+                if self.name ~= LBA.state.playerChannel then
+                    self:SetAsDebuff(state.targetDebuffs[self.name])
+                    show = true
+                end
+            elseif self:TrySetAsDispel(self) then
+                show = true
+            end
+        end
+
+        -- We want to try to avoid doubling up on buttons Blizzard are already
+        -- showing their overlay on, because it looks terrible. Also try to
+        -- avoid calling IsSpellOverlayed as it seems to cause issues with the
+        -- new WoW 10.0.2 glow.
+
+        if WOW_PROJECT_ID == 1 then
+            self.displayGlow = self.displayGlow and not (self.spellID and IsSpellOverlayed(self.spellID))
+        else
+            local parent = self:GetParent()
+            self.displayGlow = self.displayGlow and not (parent.overlay and parent.overlay:IsShown())
+        end
     end
 
     self:ShowGlow(self.displayGlow)
@@ -267,8 +271,13 @@ end
 -- https://wowpedia.fandom.com/wiki/API_GetSpellCooldown
 
 function LiteButtonAurasOverlayMixin:ReadyBefore(endTime)
-    local start, duration = GetSpellCooldown(self.spellID)
-    return start + duration < endTime
+    if endTime == 0 then
+        -- Indefinite enrage, such as from the Raging M+ affix
+        return true
+    else
+        local start, duration = GetSpellCooldown(self.spellID)
+        return start + duration < endTime
+    end
 end
 
 function LiteButtonAurasOverlayMixin:TrySetAsInterrupt()
