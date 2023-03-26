@@ -23,7 +23,7 @@ For all of your action buttons:
 - Show a red highlight and timer if:
     - the action name matches a debuff that you cast on your target
 - Show a debuff-colored border (curse/disease/magic/poison) if:
-    * your target is an enemy, and
+    - your target is an enemy, and
     - you can purge the buff, and
     - the button action is a purge/spellsteal
 
@@ -44,7 +44,7 @@ Compared to AdiButtonAuras (which this addon is modeled on), LiteButtonAuras:
 1. matches buffs/debuffs by name, so it doesn't require manually maintaining spells every expansion.
 1. has less code and hopefully uses less CPU (probably not though).
 1. has limited support for custom rules (only "show aura on ability").
-1. doesn't show buffs/debuffs on abilities that have a different name unless manualy configured.
+1. doesn't show buffs/debuffs on abilities that have a different name unless manually configured.
 1. limited support for customizing (timer appearance, show stacks or not).
 1. doesn't show hints for using abilities, except for interrupt, purge and soothe.
 1. doesn't show holy power/chi/combo points/soul shards.
@@ -58,15 +58,28 @@ it returns for all the people who want the extra features it provides.
 ```
 /lba - print current settings
 /lba help - print help
-/lba colortimers on | off | default - turn on/off using colors for timers
-/lba decimaltimers on | off | default - turn on/off showing 10ths of a second on low timers
-/lba stacks on | off | default - turn on/off showing buff/debuff stacks
-/lba font default - set font to default
-/lba font FontName - set font by name (e.g., NumberFontNormal)
+/lba colortimers on | off | default - turn on/off using colors for timers (default on)
+/lba decimaltimers on | off | default - turn on/off showing 10ths of a second on low timers (default on)
+/lba stacks on | off | default - turn on/off showing buff/debuff stacks (default off)
+/lba font default - set font to default (NumberFontNormal)
+/lba font FontName - set font by name (e.g., GameFontNormalOutline)
 /lba font FontPath - set font by path (e.g., Fonts\ARIALN.TTF)
 /lba font Size - set font size (default 14)
-/lba font FontPath Size FontFlags - set font by path size and flags
+/lba font FontFlag - set font flag (OUTLINE or THICKOUTLINE)
+/lba font FontNameOrPath Size FontFlag - set font by name/path, size and flag
 ```
+
+## Fonts
+
+If you are changing the font from the default, you will (almost certainly) want to use
+fonts with the __OUTLINE__ flag (shows a dark border around) for them to be visible.
+
+The default LBA font _NumberFontNormal_ has an outline, but (for example)
+_GameFontNormal_ doesn't and you'd need to use _GameFontNormalOutline_
+instead or explicitly set the _OUTLINE_ flag.
+
+Note that setting colored fonts will __not__ use the color, only the font, size,
+and flags. There is no difference in LBA between _NumberFontNormal_ and _NumberFontNormalYellow_.
 
 ## Show Highlights for Other Auras
 
@@ -86,9 +99,6 @@ If an ability is in your spell book you can use it by name otherwise by spell ID
 
 You can only add auras using this, or remove ones you previously added. You can't use "hide" to
 change the default behaviour of showing buffs/debuffs that match the ability name.
-
-The `hide` option is only to remove extra mappings you have added, it does not affect the default
-display when the names match.
 
 ## Never Highlight An Ability
 
