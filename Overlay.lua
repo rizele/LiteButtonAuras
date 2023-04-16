@@ -220,29 +220,39 @@ function LiteButtonAurasOverlayMixin:SetAsBuff(auraData)
     self:SetAsAura(auraData)
 end
 
-function LiteButtonAurasOverlayMixin:MatchSpell(info)
-    if self.spellID == info[10] then
+function LiteButtonAurasOverlayMixin:MatchSpell(auraData)
+    if self.spellID == auraData.spellId then
         return true
     end
 
     -- Special case for Prayer of Mending.
     if self.spellID == 33076 then
-        if info[1] == 'Prayer of Mending' then
+        if auraData.name == 'Prayer of Mending' then
             return true
         end
     end
 end
 
 function LiteButtonAurasOverlayMixin:TrySetAsTargetBuff()
-    if not self.spellID then
-        return
-    end
+    if self.spellID then
+        for _, auraData in pairs(LBA.state.target.buffs) do
+            -- Cast by a player, it's this player, and the button spell matches the buff.
+            if auraData.isFromPlayerOrPlayerPet and auraData.sourceUnit == 'player' and self:MatchSpell(auraData) then
+                local color = LBA.db.profile.color.buff
+                local alpha = LBA.db.profile.glowAlpha
+                self.Glow:SetVertexColor(color.r, color.g, color.b, alpha)
 
-    for _, info in pairs(LBA.state.target.buffs) do
-        -- Cast by a player, it's this player, and the button spell matches the buff.
-        if info[13] and info[7] == 'player' and self:MatchSpell(info) then
-            self:SetAsBuff(info)
-            return true
+                self.displayGlow = true
+                if auraData.expirationTime and auraData.expirationTime ~= 0 then
+                    self.expireTime = auraData.expirationTime
+                    self.timeMod = auraData.timeMod
+                end
+                if auraData.applications and auraData.applications > 1 then
+                    self.stackCount = auraData.applications
+                end
+
+                return true
+            end
         end
     end
 end
