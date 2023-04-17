@@ -231,6 +231,13 @@ function LiteButtonAurasOverlayMixin:MatchSpell(auraData)
             return true
         end
     end
+
+    -- Special case for Earth Shield.
+    if self.spellID == 974 then
+        if auraData.name == 'Earth Shield' then
+            return true
+        end
+    end
 end
 
 function LiteButtonAurasOverlayMixin:TrySetAsTargetBuff()
