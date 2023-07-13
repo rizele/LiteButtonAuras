@@ -15,6 +15,10 @@ local _, LBA = ...
 -- Just to make luacheck shut up a bit
 local GetSpellInfo = GetSpellInfo
 
+-- Now these are matched by name don't worry about finding all the spell IDs
+-- for all the versions. On classic_era this is ranks, but even on live
+-- there are multiple Singe Magic (for example).
+
 LBA.Interrupts = {
     [ 47528] = true,    -- Mind Freeze (Death Knight)
     [183752] = true,    -- Disrupt (Demon Hunter)
@@ -31,9 +35,6 @@ LBA.Interrupts = {
     [  1766] = true,    -- Kick (Rogue)
     [ 57994] = true,    -- Wind Shear (Shaman)
     [ 89808] = true,    -- Singe Magic (Warlock)
-    [119905] = true,    -- Command Demon: Singe Magic (Warlock)
-    [132411] = true,    -- Command Demon: Singe Magic (Warlock)
-    [212623] = true,    -- Command Demon: Singe Magic (Warlock PvP Talent)
     [  6552] = true,    -- Pummel (Warrior)
     [351338] = true,    -- Quell (Evoker)
 }
@@ -53,14 +54,14 @@ LBA.HostileDispels = {
     [   370] = { Magic = true },    -- Purge (Shaman)
     [ 19505] = { Magic = true },    -- Devour Magic (Warlock)
     [ 25046] = { Magic = true },    -- Arcane Torrent (Blood Elf Rogue)
-    [ 28730] = { Magic = true },    -- Arcane Torrent (Blood Elf Mage/Warlock)
-    [ 50613] = { Magic = true },    -- Arcane Torrent (Blood Elf Death Knight)
-    [ 69179] = { Magic = true },    -- Arcane Torrent (Blood Elf Warrior)
-    [ 80483] = { Magic = true },    -- Arcane Torrent (Blood Elf Hunter)
-    [129597] = { Magic = true },    -- Arcane Torrent (Blood Elf Monk)
-    [155145] = { Magic = true },    -- Arcane Torrent (Blood Elf Paladin)
-    [202719] = { Magic = true },    -- Arcane Torrent (Blood Elf Demon Hunter)
-    [232633] = { Magic = true },    -- Arcane Torrent (Blood Elf Priest)
+--  [ 28730] = { Magic = true },    -- Arcane Torrent (Blood Elf Mage/Warlock)
+--  [ 50613] = { Magic = true },    -- Arcane Torrent (Blood Elf Death Knight)
+--  [ 69179] = { Magic = true },    -- Arcane Torrent (Blood Elf Warrior)
+--  [ 80483] = { Magic = true },    -- Arcane Torrent (Blood Elf Hunter)
+--  [129597] = { Magic = true },    -- Arcane Torrent (Blood Elf Monk)
+--  [155145] = { Magic = true },    -- Arcane Torrent (Blood Elf Paladin)
+--  [202719] = { Magic = true },    -- Arcane Torrent (Blood Elf Demon Hunter)
+--  [232633] = { Magic = true },    -- Arcane Torrent (Blood Elf Priest)
 }
 
 LBA.PlayerPetBuffs = {
@@ -93,6 +94,31 @@ LBA.WeaponEnchantSpellID = {
     [   5400] = GetSpellInfo(318038),   -- Flametongue Weapon
     [   5401] = GetSpellInfo(33757),    -- Windfury Weapon
 }
+
+-- The main reason for this is that Classic Era still has spell ranks,
+-- each rank has a different spell ID, and the tables above only have the
+-- first rank since that's what retail/wotlk use. It is generally more in
+-- keeping with our "match by name" anyway.
+
+do
+    local function AddSpellNames(t)
+        local spellIDs = GetKeysArray(t)
+        for _, spellID in ipairs(spellIDs) do
+            local spell = Spell:CreateFromSpellID(spellID)
+            if not spell:IsSpellEmpty() then
+                spell:ContinueOnSpellLoad(
+                    function ()
+                        t[spell:GetSpellName()] = t[spellID]
+                    end)
+            end
+        end
+    end
+
+    AddSpellNames(LBA.Interrupts)
+    AddSpellNames(LBA.Soothes)
+    AddSpellNames(LBA.HostileDispels)
+    AddSpellNames(LBA.PlayerPetBuffs)
+end
 
 --@debug
 _G.LBA = LBA
