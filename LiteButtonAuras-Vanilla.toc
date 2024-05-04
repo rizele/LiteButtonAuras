@@ -1,4 +1,4 @@
-## Interface: 11501
+## Interface: 11502
 ## Title: LiteButtonAuras
 ## Version: @project-version@
 ## Author: Xodiv-Nagrand
@@ -20,4 +20,5 @@ Controller.xml
 
 UI\AceGUIWidgets-LBAAnchorButtons.lua
 UI\AceGUIWidgets-LBAInputFocus.lua
+UI\AceGUIWidgets-LBAInputSpellID.lua
 UI\Options.lua
