@@ -11,6 +11,9 @@
 
 local _, LBA = ...
 
+local C_Spell = LBA.C_Spell or C_Spell
+local C_Item = LBA.C_Item or C_Item
+
 local LibBG = LibStub("LibButtonGlow-1.0")
 
 
@@ -21,11 +24,8 @@ local LibBG = LibStub("LibButtonGlow-1.0")
 -- it's a pain to maintain.
 
 local DebuffTypeColor = DebuffTypeColor
-local GetItemSpell = GetItemSpell
 local GetMacroItem = GetMacroItem
 local GetMacroSpell = GetMacroSpell
-local GetSpellCooldown = GetSpellCooldown
-local GetSpellInfo = GetSpellInfo
 local GetTime = GetTime
 local IsSpellOverlayed = IsSpellOverlayed
 local UnitIsFriend = UnitIsFriend
@@ -43,11 +43,11 @@ function LBA.UpdateAuraMap()
     LBA.AuraMap = {}
     for showAura, onAbilityTable in pairs(LBA.db.profile.auraMap) do
         if type(showAura) == 'number' then
-            showAura = GetSpellInfo(showAura)
+            showAura = C_Spell.GetSpellName(showAura)
         end
         for _, onAbility in ipairs(onAbilityTable) do
             if type(onAbility) == 'number' then
-                onAbility = GetSpellInfo(onAbility)
+                onAbility = C_Spell.GetSpellName(onAbility)
             end
             if showAura and onAbility then
                 LBA.AuraMap[onAbility] = LBA.AuraMap[onAbility] or {}
@@ -113,20 +113,20 @@ function LiteButtonAurasOverlayMixin:SetUpAction()
     local type, id, subType = self:GetActionInfo()
 
     if type == 'spell' then
-        self.name = GetSpellInfo(id)
+        self.name = C_Spell.GetSpellName(id)
         self.spellID = id
         return
     end
 
     if type == 'item' then
-        self.name, self.spellID = GetItemSpell(id)
+        self.name, self.spellID = C_Item.GetItemSpell(id)
         return
     end
 
     if type == 'macro' then
         if subType == 'spell' then
             self.spellID = id
-            self.name = GetSpellInfo(self.spellID)
+            self.name = C_Spell.GetSpellName(self.spellID)
             return
         elseif subType == 'item' then
             -- 10.2 GetActionInfo() seems bugged for this case. In an ideal
@@ -140,7 +140,7 @@ function LiteButtonAurasOverlayMixin:SetUpAction()
                 if macroID then
                     local _, itemLink = GetMacroItem(macroID)
                     if itemLink then
-                        self.name, self.spellID = GetItemSpell(itemLink)
+                        self.name, self.spellID = C_Item.GetItemSpell(itemLink)
                     end
                 end
             end
@@ -148,13 +148,13 @@ function LiteButtonAurasOverlayMixin:SetUpAction()
         elseif not subType then
             local itemName = GetMacroItem(id)
             if itemName then
-                local name, spellID = GetItemSpell(itemName)
+                local name, spellID = C_Item.GetItemSpell(itemName)
                 self.spellID = spellID
                 self.name = name or itemName
                 return
             else
                 self.spellID = GetMacroSpell(id)
-                self.name = GetSpellInfo(self.spellID)
+                self.name = C_Spell.GetSpellName(self.spellID)
                 return
             end
         end
@@ -220,7 +220,7 @@ function LiteButtonAurasOverlayMixin:Update(stateOnly)
                 show = true
             elseif self:TrySetAsTotem() then
                 show = true
-            elseif self:TrySetAsTaunt() then
+            elseif self:TrySetAsTaunt('target') then
                 show = true
             elseif not friendly_target and self:TrySetAsBuff('player') then
                 show = true
@@ -349,7 +349,7 @@ end
 
 function LiteButtonAurasOverlayMixin:TrySetAsDebuff(unit)
     local aura = self:GetMatchingAura(LBA.state[unit].debuffs)
-    if aura then
+    if aura and aura.sourceUnit == 'player' then
         self:SetAsDebuff(aura)
         return true
     end
@@ -390,7 +390,7 @@ function LiteButtonAurasOverlayMixin:ReadyBefore(endTime)
         -- Indefinite enrage, such as from the Raging M+ affix
         return true
     else
-        local start, duration = GetSpellCooldown(self.spellID)
+        local start, duration = C_Spell.GetSpellCooldown(self.spellID)
         return start + duration < endTime
     end
 end
@@ -434,9 +434,9 @@ end
 
 -- Taunt Config ----------------------------------------------------------------
 
-function LiteButtonAurasOverlayMixin:TrySetAsTaunt()
+function LiteButtonAurasOverlayMixin:TrySetAsTaunt(unit)
     if not self.name or not LBA.Taunts[self.name] then return end
-    if UnitIsFriend('player', 'target') then return end
+    if UnitIsFriend('player', unit) then return end
 
     for _, auraData in pairs(LBA.state.target.debuffs) do
         if LBA.Taunts[auraData.name] then
