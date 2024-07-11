@@ -14,6 +14,9 @@ local _, LBA = ...
 
 if not C_Spell.GetSpellInfo then
 
+    local GetSpellInfo = _G.GetSpellInfo
+    local GetSpellCooldown = _G.GetSpellCooldown
+
     LBA.C_Spell = {}
 
     function LBA.C_Spell.GetSpellInfo(spellIdentifier)
@@ -47,7 +50,7 @@ if not C_Spell.GetSpellInfo then
             return {
                 startTime = startTime,
                 duration = duration,
-                isEnabled = isEanbled,
+                isEnabled = isEnabled,
                 modRate = modRate,
             }
         end
@@ -57,18 +60,17 @@ if not C_Spell.GetSpellInfo then
 end
 
 if not C_Item or not C_Item.GetItemInfoInstant then
-
     LBA.C_Item = {}
-
-    LBA.C_Item.GetItemInfoInstant = GetItemInfoInstant
-    LBA.C_Item.GetItemSpell = GetItemSpell
-
+    LBA.C_Item.GetItemInfoInstant = _G.GetItemInfoInstant
+    LBA.C_Item.GetItemSpell = _G.GetItemSpell
 end
 
 
 -- Classic doesn't have ForEachAura even though it has AuraUtil.
 
 if not AuraUtil.ForEachAura then
+
+    local UnitAura = _G.UnitAura
 
     LBA.AuraUtil = {}
 
