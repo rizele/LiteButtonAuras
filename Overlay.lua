@@ -127,6 +127,8 @@ function LiteButtonAurasOverlayMixin:Style()
     self.Stacks:ClearAllPoints()
     self.Stacks:SetPoint(point, self, x*p.stacksAdjust, y*p.stacksAdjust)
     self.Stacks:SetJustifyH(justifyH)
+
+    self.Glow:SetAlpha(p.glowAlpha)
 end
 
 -- From: https://warcraft.wiki.gg/wiki/UnitId
@@ -357,7 +359,7 @@ function LiteButtonAurasOverlayMixin:Update(stateOnly)
                 show = true
             elseif destOk and self:TrySetAsInterrupt() then
                 show = true
-            elseif self:TrySetAsPlayerTotem() then
+            elseif destOk and self:TrySetAsHostileDispel() then
                 show = true
             elseif friendly_target and self:TrySetAsTargetBuff() then
                 show = true
@@ -365,13 +367,13 @@ function LiteButtonAurasOverlayMixin:Update(stateOnly)
                 show = true
             elseif not friendly_target and self:TrySetAsPlayerBuff() then
                 show = true
-            elseif destOk and self:TrySetAsDebuff() then
-                show = true
-            elseif self:TrySetAsPetBuff() then
+            elseif self:TrySetAsPlayerTotem() then
                 show = true
             elseif self:TrySetAsWeaponEnchant() then
                 show = true
-            elseif destOk and self:TrySetAsHostileDispel() then
+            elseif destOk and self:TrySetAsDebuff() then
+                show = true
+            elseif self:TrySetAsPetBuff() then
                 show = true
             end
         end
@@ -427,7 +429,6 @@ end
 
 function LiteButtonAurasOverlayMixin:SetAsPlayerBuff(auraData)
     local color = LBA.db.profile.color.buff
-    local alpha = LBA.db.profile.glowAlpha
     self.Glow:SetVertexColor(color.r, color.g, color.b, alpha)
     self:SetAsAuraCommon(auraData)
 end
@@ -486,8 +487,7 @@ end
 
 function LiteButtonAurasOverlayMixin:SetAsPetBuff(auraData)
     local color = LBA.db.profile.color.petBuff
-    local alpha = LBA.db.profile.glowAlpha
-    self.Glow:SetVertexColor(color.r, color.g, color.b, alpha)
+    self.Glow:SetVertexColor(color.r, color.g, color.b)
     self:SetAsAuraCommon(auraData)
 end
 
@@ -503,9 +503,7 @@ end
 
 function LiteButtonAurasOverlayMixin:SetAsDebuff(auraData)
     local color = LBA.db.profile.color.debuff
-    local alpha = LBA.db.profile.glowAlpha
-    self.Glow:SetVertexColor(color.r, color.g, color.b, alpha)
-    -- self.Stacks:SetTextColor(color.r, color.g, color.b, 1.0)
+    self.Glow:SetVertexColor(color.r, color.g, color.b)
     self:SetAsAuraCommon(auraData)
 end
 
@@ -528,8 +526,7 @@ end
 
 function LiteButtonAurasOverlayMixin:SetAsPlayerTotem(expireTime)
     local color = LBA.db.profile.color.buff
-    local alpha = LBA.db.profile.glowAlpha
-    self.Glow:SetVertexColor(color.r, color.g, color.b, alpha)
+    self.Glow:SetVertexColor(color.r, color.g, color.b)
     self.expireTime, self.modTime = expireTime, nil
     self.displayGlow = true
 end
@@ -619,8 +616,7 @@ end
 
 function LiteButtonAurasOverlayMixin:SetAsHostileDispel(auraData)
     local color = DebuffTypeColor[auraData.dispelName or ""]
-    local alpha = LBA.db.profile.glowAlpha
-    self.Glow:SetVertexColor(color.r, color.g, color.b, alpha)
+    self.Glow:SetVertexColor(color.r, color.g, color.b)
     self:SetAsAuraCommon(auraData)
 end
 
